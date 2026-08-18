@@ -1,0 +1,35 @@
+name: verify
+
+# Runs the same audit the README tells you to run before publishing a refreshed
+# archive: ./verify.sh, which checks the manifest, the SHA256SUMS checksums, the
+# decompression ratio, the absence of executable content and of secrets, and
+# mainnet proof-of-work provenance. Takes a few seconds; there is nothing to
+# build or cache here.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: seed corpora audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # No tool setup step: verify.sh needs only unzip, sha256sum, file and
+      # python3, all present on the runner image. It exits non-zero with a named
+      # tool if that ever stops being true, rather than skipping checks quietly.
+      - name: Audit seed corpora
+        run: ./verify.sh
