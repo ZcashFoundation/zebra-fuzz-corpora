@@ -1,5 +1,7 @@
 # zebra-fuzz-corpora
 
+[![verify](https://github.com/ZcashFoundation/zebra-fuzz-corpora/actions/workflows/verify.yml/badge.svg)](https://github.com/ZcashFoundation/zebra-fuzz-corpora/actions/workflows/verify.yml)
+
 Seed corpora for the [Zebra](https://github.com/ZcashFoundation/zebra) `cargo-fuzz` harnesses.
 
 The harnesses themselves live in Zebra at [`zebra-fuzz/`](https://github.com/ZcashFoundation/zebra/tree/main/zebra-fuzz),
@@ -83,6 +85,11 @@ blocks — the one property here that cannot be faked without doing the work.
 
 Every check reports independently; a failure never stops the rest of the run.
 
+CI runs the same script on every push and pull request
+([`.github/workflows/verify.yml`](.github/workflows/verify.yml)), so a refresh cannot land unaudited —
+but run it locally first, because the point is to catch a bad archive before it is published, not
+after.
+
 ## Refreshing
 
 These are a one-time bootstrap. Once OSS-Fuzz is running it maintains its own corpus per target in
@@ -101,4 +108,4 @@ assets, which can be pruned.
 
 ## License
 
-MIT OR Apache-2.0, matching Zebra.
+MIT ([`LICENSE-MIT`](LICENSE-MIT)) OR Apache-2.0 ([`LICENSE-APACHE`](LICENSE-APACHE)), matching Zebra.
