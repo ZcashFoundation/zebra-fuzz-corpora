@@ -17,7 +17,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-# The 15 fuzz targets in ZcashFoundation/zebra zebra-fuzz/fuzz/fuzz_targets/.
+# The 17 fuzz targets in ZcashFoundation/zebra zebra-fuzz/fuzz/fuzz_targets/.
 # Archive names are a contract with the OSS-Fuzz build.sh, which looks each one
 # up by target name -- a rename silently removes that target's seeds.
 TARGETS=(
@@ -29,11 +29,13 @@ TARGETS=(
     ironwood_value_balance_codec_fuzz
     jsonrpsee_envelope_fuzz
     note_commitment_tree_fuzz
+    orchard_batch_equivalence
     p2p_deep_fuzz
     p2p_message_parse
     rpc_handler_fuzz
     script_flag_matrix_fuzz
     script_verify_fuzz
+    tower_partition_equivalence
     v6_transaction_fuzz
     v6_transaction_semantic_fuzz
 )
