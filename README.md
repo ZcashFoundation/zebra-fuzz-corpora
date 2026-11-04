@@ -11,7 +11,7 @@ of opaque compressed archives stay out of the consensus node's git history.
 ## Contents
 
 ```
-seeds/<target>_seed_corpus.zip     one archive per fuzz target, 15 total
+seeds/<target>_seed_corpus.zip     one archive per fuzz target, 17 total
 SHA256SUMS                         checksums for the above
 verify.sh                          integrity + safety audit, see Verifying
 ```
@@ -52,7 +52,7 @@ git-ignored in Zebra. The archives here are a starting point, never a destinatio
 
 Everything in these archives derives from public Zcash mainnet chain data.
 
-They were produced by minimising raw collected corpora with `cargo fuzz cmin` — libFuzzer's
+The original 15 archives were produced by minimising raw collected corpora with `cargo fuzz cmin` — libFuzzer's
 `-merge=1`, a greedy pass that keeps an input only when it contributes a coverage feature the
 earlier inputs did not. The result retains every coverage feature of what went in, though not
 necessarily in the fewest possible files. Minimisation reduced 68,645 files (110 MB) to 14,648
@@ -69,6 +69,35 @@ or trimmed. Per-archive checksums are in [`SHA256SUMS`](SHA256SUMS).
 
 ## Verifying
 
+### Batch-equivalence addition (#11492)
+
+The two additional archives contain 24 Orchard and 14 Tower inputs, selected
+from the ZCG #332 public-mainnet transaction collections (pre-NU6.2, NU6.2,
+and NU6.3 activation). Each payload is transaction wire bytes followed by one
+control byte. No proof construction or private witness material is included.
+
+Selection was re-measured using the targets ported to current Zebra APIs.
+The initial Orchard sample had 25 entries, including one byte-identical
+duplicate; ASan/libFuzzer `-merge=1` produced 24 distinct inputs. Tower retained
+14. Coverage minimisation alone is insufficient: the replay helper also checks
+that every input reaches the oracle, all three Orchard eras have accepting
+samples, and Ironwood/mixed-pool data remains present. Tower samples must reach
+two different nonempty partitions and include valid signatures.
+
+To reproduce archive packaging from the reviewed, minimised corpus directories:
+
+```sh
+python3 package-equivalence.py CORPUS_ROOT
+./verify.sh
+```
+
+The packager uses fixed ZIP timestamps and file permissions and refreshes
+`SHA256SUMS`. It does not fetch chain data or publish anything. Generate and
+replay candidates with Zebra's `prepare_equivalence_corpus` and
+`check_equivalence_corpus` examples; see `zebra-fuzz/fuzz/EQUIVALENCE.md`.
+
+### Integrity and safety checks
+
 ```sh
 ./verify.sh          # no network, a few seconds, exit 0 = all clear
 ```
@@ -76,7 +105,7 @@ or trimmed. Per-archive checksums are in [`SHA256SUMS`](SHA256SUMS).
 Run it **after any refresh and before publishing anything here** — these archives are served to
 OSS-Fuzz under the Foundation's name.
 
-It checks the archive manifest against the 15 fuzz target names, the checksums in `SHA256SUMS`, the
+It checks the archive manifest against the 17 fuzz target names, the checksums in `SHA256SUMS`, the
 decompression ratio (zip bomb), the absence of executable content and of secrets, credentials or
 local paths, and mainnet provenance: a Zcash header is 1487 bytes through the Equihash solution, and
 its double-SHA256 must show leading zeros to satisfy proof-of-work. Fabricated bytes clear 8 leading
